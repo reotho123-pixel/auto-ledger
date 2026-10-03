@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0fa968">
-<title>「记一笔」快捷指令安装引导</title>
+<title>快捷指令记账 · 安装引导</title>
 <style>
 :root{--bg:#f4f5f7;--ink:#1c1e21;--sub:#8a919c;--line:#eceef1;--acc:#0fa968;--deep:#0d8f5a;--weak:#e6f7ef}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -15,6 +15,7 @@ header h1{font-size:19px}
 header p{font-size:13px;opacity:.9;margin-top:6px}
 .card{background:#fff;border-radius:14px;margin:12px;padding:16px}
 .ctitle{font-weight:700;font-size:15px;margin-bottom:8px}
+.badge{display:inline-block;background:var(--acc);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .step{display:flex;gap:10px;margin:12px 0}
 .stepnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:3px}
 .hint{font-size:12px;color:var(--sub)}
@@ -23,64 +24,101 @@ header p{font-size:13px;opacity:.9;margin-top:6px}
 .copybtn{display:block;width:100%;padding:11px;border-radius:11px;background:var(--weak);color:var(--deep);font-weight:600;font-size:14px;border:1.5px dashed var(--acc);margin:8px 0 4px}
 .copybtn.plain{background:#eef0f3;color:var(--ink);border:0}
 .url{word-break:break-all;background:#f6f8fa;border-radius:8px;padding:8px 10px;font-size:13px;margin:6px 0}
+.voucher{font-family:ui-monospace,Menlo,Consolas,monospace;background:#fbfcfd;border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:13px;white-space:pre;margin:8px 0;color:#333}
 #toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(28,30,33,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50}
 #toast.show{opacity:1}
 ol,ul{padding-left:20px}
 li{margin:4px 0}
 em{font-style:normal;background:var(--weak);border-radius:4px;padding:0 4px;color:var(--deep);font-weight:600}
+.flow{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sub);margin:4px 0 8px;flex-wrap:wrap}
+.flow i{font-style:normal;background:#f1f3f5;border-radius:6px;padding:2px 7px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <h1>⌨️ 快捷指令「记一笔」安装引导</h1>
-    <p>复制支付通知 → 轻点一下 → 金额/商户/分类/时间自动填好 → 点「保存这笔」。全程约 3 秒。</p>
+    <h1>⌨️ 快捷指令记账 · 三种方案安装引导</h1>
+    <p>微信/支付宝里复制不了文字？不用复制——截图、说话、银行短信三条路都通。每台手机装一次。</p>
   </header>
 
   <div class="card">
     <div class="ctitle">✅ 开始前确认</div>
-    <div class="hint">你正在用 iPhone 的 <em>Safari</em> 看到本页，说明网络没问题。如果是在微信里打开的，请点右上角「···」→ <em>在 Safari 中打开</em>。此引导只需要做一次。</div>
+    <div class="hint">你在用 iPhone 的 <em>Safari</em> 看到本页 = 网络没问题。从微信里打开的话，点右上角「···」→ <em>在 Safari 中打开</em>。三个方案共用同一条网址（见下），装任意一个或多个都行，推荐至少装 <b>方案A</b>。</div>
   </div>
 
   <div class="card">
-    <div class="ctitle">🛠️ 四步建好快捷指令（约 2 分钟）</div>
-    <div class="step"><div class="stepnum">1</div><div>打开 iPhone 自带 <em>快捷指令</em> App → 底部「快捷指令」→ 右上角 <em>＋</em> 新建。</div></div>
-    <div class="step"><div class="stepnum">2</div><div>点 <em>添加操作</em>，按顺序搜索并添加下面 4 个动作（顺序不能错）：
-      <div class="action">① <b>获取剪贴板</b></div>
-      <div class="action">② <b>URL 编码</b>（输入自动接上一步，不用改）</div>
-      <div class="action">③ <b>文本</b>：先复制下面这行网址粘贴进输入框，然后点输入框下方/长按选 <em>选择变量</em>，把第②步「URL 编码」的<b>结果变量</b>接到网址末尾（或直接把变量拖到末尾）
-        <button class="copybtn" data-copy="url">📋 一键复制网址（第③步要填的内容）</button>
+    <div class="ctitle">方案A · 截图记账<span class="badge">推荐 · 不用复制</span></div>
+    <div class="flow"><i>支付完成</i>→<i>截屏</i>→<i>敲两下背面</i>→<i>自动识别填好</i>→<i>点保存</i></div>
+    <div class="step"><div class="stepnum">1</div><div>快捷指令 App → 右上角 <em>＋</em> 新建 → 点 <em>添加操作</em>，按顺序加 5 个动作：
+      <div class="action">① <b>获取最新屏幕截图</b></div>
+      <div class="action">② <b>提取图片中的文字</b>（输入自动接上一步；可点开把「语言」留空自动识别）</div>
+      <div class="action">③ <b>URL 编码</b></div>
+      <div class="action">④ <b>文本</b>：粘贴下面这行网址，再在末尾接上第③步「URL 编码」的<em>结果变量</em>（点输入框下方「选择变量」，或直接拖变量到末尾）
+        <button class="copybtn" data-copy="url">📋 一键复制网址（所有方案通用）</button>
         <div class="url">https://reotho123-pixel.github.io/auto-ledger/?auto=</div>
       </div>
-      <div class="action">④ <b>打开 URL</b>（输入自动接上一步）</div>
+      <div class="action">⑤ <b>打开 URL</b></div>
     </div></div>
-    <div class="step"><div class="stepnum">3</div><div>点顶部长标题 → 改名为 <em>记一笔</em> → 右上角「完成」。</div></div>
-    <div class="step"><div class="stepnum">4</div><div>先复制下面这段示例支付文字，再运行一次「记一笔」验证：Safari 应自动弹出且金额 <em>25</em>、商户 <em>瑞幸咖啡</em> 已填好。测完去「明细」把这条删掉即可。
+    <div class="step"><div class="stepnum">2</div><div>改名为 <em>截图记账</em> → 完成。</div></div>
+    <div class="step"><div class="stepnum">3</div><div>测试：把下面这张示例凭证<b>截个图</b>，然后运行「截图记账」→ Safari 应自动打开且金额 <em>25</em>、商户 <em>瑞幸咖啡</em> 已填好 → 点「保存这笔」（测完去明细删掉这条）。
+      <div class="voucher">微信支付凭证
+2026年10月2日 12:30
+-25.00
+商户：瑞幸咖啡（万达店）
+支付方式：零钱</div>
+    </div></div>
+    <div class="hint">说明：识别用的是 iPhone 系统自带的文字识别（离线，不联网上传）。截图会留在相册，介意的话可在快捷指令末尾再加第⑥个动作<b>删除照片</b>自动清理。识别结果页请扫一眼金额再保存。</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">方案B · 复制/口述记账<span class="badge">更轻量</span></div>
+    <div class="flow"><i>复制通知文字 或 直接口述</i>→<i>运行记一笔</i>→<i>点保存</i></div>
+    <div class="step"><div class="stepnum">1</div><div>新建快捷指令，加 4 个动作：
+      <div class="action">① <b>获取剪贴板</b>（想用语音就把①换成<b>听写文本</b>，说「25元 瑞幸咖啡」这样的格式）</div>
+      <div class="action">② <b>URL 编码</b></div>
+      <div class="action">③ <b>文本</b>：粘贴通用网址 + 接②的结果变量（网址用上面的复制按钮）</div>
+      <div class="action">④ <b>打开 URL</b></div>
+    </div></div>
+    <div class="step"><div class="stepnum">2</div><div>改名为 <em>记一笔</em> → 完成。测试：点「复制测试文字」→ 运行「记一笔」→ 应自动识别 25 元瑞幸。
       <button class="copybtn plain" data-copy="test">📋 复制测试文字</button>
+    </div></div>
+    <div class="hint">适用场景：银行短信可直接复制、聊天记录里收到账单截图长按可「提取文字」、或自己口述补一笔（口述支持「25元」「35块」两种说法）。</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">方案C · 银行短信全自动<span class="badge">零操作 · 可选</span></div>
+    <div class="hint">银行卡消费的短信可以直接变成全自动：短信一到、识别、打开记账页，只差点「保存」。覆盖微信/支付宝绑卡消费和刷卡。</div>
+    <div class="step"><div class="stepnum">1</div><div>快捷指令 → 底部「自动化」→ <em>＋</em> → 选 <em>信息</em>：发件人填银行号码（工行95588、建行95533、招行95555、中行95566、农行95599…），「信息包含」填 <em>消费</em>，关闭「运行前询问」。</div></div>
+    <div class="step"><div class="stepnum">2</div><div>给这条自动化加 4 个动作：
+      <div class="action">① <b>文本</b>：插入变量 <em>快捷指令输入</em>（即短信内容）</div>
+      <div class="action">② <b>URL 编码</b></div>
+      <div class="action">③ <b>文本</b>：粘贴通用网址 + 接②的结果变量</div>
+      <div class="action">④ <b>打开 URL</b></div>
     </div></div>
   </div>
 
   <div class="card">
     <div class="ctitle">✨ 让它更好用：轻点背面两下</div>
-    <div>设置 → 辅助功能 → 触控 → 拉到最底 <em>轻点背面</em> → 轻点两下 → 选快捷指令「记一笔」。以后复制完支付通知，<b>敲两下手机背面</b>就自动记账。</div>
+    <div>设置 → 辅助功能 → 触控 → 拉到最底 <em>轻点背面</em> → 轻点两下 → 选「截图记账」（或「记一笔」）。iPhone 15 Pro 及以后的机型也可以把侧边的<em>操作按钮</em>设为运行快捷指令。</div>
   </div>
 
   <div class="card">
-    <div class="ctitle">📱 日常怎么用</div>
+    <div class="ctitle">📱 日常怎么选</div>
     <ul>
-      <li>微信：支付后点开「微信支付」服务通知 → 长按文字 <em>复制</em>（通知栏也可以）→ 敲两下背面 → 保存</li>
-      <li>支付宝：账单详情页复制商家/金额信息，或用「数据」页导 CSV 批量补</li>
-      <li>银行消费短信：建议另建一条「收到信息」自动化（配方一），实现零操作</li>
+      <li><b>有截图就走方案A</b>：微信支付凭证页、支付宝账单详情页，截一下就完事</li>
+      <li>懒得上截图：支付宝「我的→账单」右上角导出 CSV，在记账应用「数据」页一次导入整月（最全、零逐笔）</li>
+      <li>绑卡消费多：把方案C 装上，短信自动来</li>
+      <li>补一笔：手动记，或口述（方案B 的听写变体）</li>
     </ul>
   </div>
 
   <div class="card">
     <div class="ctitle">🩹 不对劲时看这里</div>
     <ul>
-      <li>打开后提示「没识别出金额」→ 剪贴板里不是支付文字，重新复制</li>
-      <li>打开的是 404/空白页 → 检查第③步网址是否完整（务必用上面的复制按钮）</li>
-      <li>每笔都要点一下「保存这笔」→ 这是防误识别/重复记账的确认，故意的</li>
-      <li>数据存在手机本机浏览器，换浏览器/清 Safari 数据会丢 → 记得每月「数据 → 导出备份」</li>
+      <li>打开后提示「没识别出金额」→ 截图里没有金额数字/剪贴板不是支付文字，重截重试</li>
+      <li>打开的是 404 → 检查动作里的网址是否完整（务必用复制按钮）</li>
+      <li>每笔要点「保存这笔」→ 防误识别/重复记账的确认，故意的</li>
+      <li>数据存在手机本机浏览器 → 每月「数据 → 导出备份」一次更稳妥</li>
     </ul>
   </div>
 </div>
@@ -97,7 +135,7 @@ document.addEventListener('click',function(e){
   var b=e.target.closest('[data-copy]');
   if(!b)return;
   var text=TEXTS[b.dataset.copy];
-  function done(){toast('已复制 ✓ '+(b.dataset.copy==='url'?'去快捷指令第③步粘贴':'运行「记一笔」测试'));}
+  function done(){toast('已复制 ✓ '+(b.dataset.copy==='url'?'粘贴到「文本」动作里':'运行「记一笔」测试'));}
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(done,function(){fallback();});
   }else fallback();
