@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0fa968">
+<title>自动记账</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#fff; --ink:#1c1e21; --sub:#8a919c; --line:#eceef1;
+  --acc:#0fa968; --acc-deep:#0d8f5a; --acc-weak:#e6f7ef; --danger:#e5484d;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Microsoft YaHei,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+#app{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer;font-size:15px}
+input,textarea{font-family:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%;background:#fff;color:var(--ink);outline:none}
+input:focus,textarea:focus{border-color:var(--acc)}
+textarea{resize:none;line-height:1.5}
+.hidden{display:none!important}
+.card{background:var(--card);border-radius:14px;margin:10px 12px;padding:14px}
+.ctitle{font-weight:700;font-size:15px;margin-bottom:10px}
+.hint{font-size:12px;color:var(--sub);line-height:1.6;margin:8px 0}
+.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 6px}
+.btn{display:block;width:100%;padding:12px;border-radius:12px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;text-align:center;margin-top:10px}
+.btn.ghost{background:#eef0f3;color:var(--ink)}
+.btn.danger{background:#fdecec;color:var(--danger)}
+.btn.armed{background:var(--danger);color:#fff}
+.btn.sm{width:auto;padding:9px 16px;margin:0;font-size:14px}
+.btn[disabled]{opacity:.4}
+/* 顶部 */
+#topbar{position:sticky;top:0;z-index:10;background:linear-gradient(160deg,var(--acc-deep),var(--acc));color:#fff;padding:12px 16px 14px;border-radius:0 0 18px 18px}
+.mnav{display:flex;align-items:center;justify-content:center;gap:18px}
+.mnav button{color:#fff;font-size:22px;width:36px;height:30px;line-height:1}
+.mnav b{font-size:17px;min-width:110px;text-align:center}
+.msum{display:flex;margin-top:10px}
+.msum>div{flex:1}
+.msum span{display:block;font-size:11px;opacity:.8}
+.msum b{font-size:18px;font-variant-numeric:tabular-nums}
+.bline{margin-top:10px;display:flex;align-items:center;gap:8px}
+.bbar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden}
+.bbar i{display:block;height:100%;background:#fff;border-radius:3px}
+.bline span{font-size:11px;opacity:.9;white-space:nowrap}
+/* tabbar */
+#tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+#tabbar button{flex:1;padding:7px 0 9px;font-size:12px;color:var(--sub);display:block}
+#tabbar button i{display:block;font-style:normal;font-size:21px;margin-bottom:1px}
+#tabbar button.on{color:var(--acc);font-weight:600}
+/* 列表 */
+.dayhead{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);padding:1px 2px 8px}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.row .ic{width:38px;height:38px;border-radius:12px;background:#f4f6f8;display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.row .mid{flex:1;min-width:0}
+.row .t1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t2{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .amt{font-variant-numeric:tabular-nums;font-weight:600;flex:none}
+.amt.expense{color:var(--ink)}
+.amt.income{color:var(--acc)}
+.empty{text-align:center;color:var(--sub);padding:34px 10px;line-height:1.9}
+.empty b{color:var(--ink);font-size:16px}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 13px;border-radius:18px;background:#f1f3f5;font-size:14px;border:1.5px solid transparent}
+.chip.on{background:var(--acc-weak);color:var(--acc-deep);border-color:var(--acc);font-weight:600}
+/* seg */
+.seg{display:flex;background:#eef0f3;border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:8px;border-radius:10px;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+/* 识别结果 */
+.parsed{border-top:1px dashed var(--line);margin-top:14px;padding-top:2px}
+.parsed .ok{font-size:12px;color:var(--acc);font-weight:400;margin-left:6px}
+/* 统计 */
+.brow{display:flex;gap:8px;align-items:center}
+.brow input{flex:1}
+.crow{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px}
+.crow .cn{width:88px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbar{flex:1;height:8px;border-radius:4px;background:#f1f3f5;overflow:hidden}
+.cbar i{display:block;height:100%;background:var(--acc);border-radius:4px}
+.crow .cv{width:118px;flex:none;text-align:right;color:var(--sub);font-size:12px;font-variant-numeric:tabular-nums}
+.trend{display:flex;align-items:flex-end;gap:2px;height:90px;margin-top:6px}
+.trend i{flex:1;background:#bfe8d4;border-radius:3px 3px 0 0;min-height:2px}
+.trend i.today{background:var(--acc)}
+.tx{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:6px}
+/* 弹层 */
+#mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+#sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;animation:up .22s ease}
+#sheet h3{font-size:16px;margin-bottom:4px;text-align:center}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.grid3{display:flex;gap:8px}
+.grid3 .btn{flex:1;padding:10px 4px;font-size:13px;margin:0}
+details summary{cursor:pointer;font-size:14px;font-weight:600;list-style:none}
+details summary::before{content:'❓ '}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(28,30,33,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:14px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;max-width:80vw}
+#toast.show{opacity:1}
+.pv{margin-top:12px;border-radius:10px;padding:12px;font-size:13px;line-height:1.7;background:var(--acc-weak)}
+.pv.err{background:#fdecec;color:#b3261e}
+.pv .mini{margin-top:8px;border-top:1px dashed rgba(0,0,0,.12);padding-top:8px;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="mnav">
+      <button data-action="pm">‹</button>
+      <b id="mlabel"></b>
+      <button data-action="nm">›</button>
+    </div>
+    <div class="msum">
+      <div><span>支出</span><b id="sumE">¥0.00</b></div>
+      <div><span>收入</span><b id="sumI">¥0.00</b></div>
+      <div><span>结余</span><b id="sumB">¥0.00</b></div>
+    </div>
+    <div id="budgetLine" class="bline hidden"><div class="bbar"><i id="bfill"></i></div><span id="btext"></span></div>
+  </header>
+
+  <main>
+    <section id="v-list"></section>
+
+    <section id="v-add" class="hidden">
+      <div class="card">
+        <div class="seg">
+          <button id="seg-paste" data-action="seg" data-v="paste" class="on">📋 粘贴识别</button>
+          <button id="seg-manual" data-action="seg" data-v="manual">✍️ 手动记</button>
+        </div>
+        <div id="pane-paste">
+          <textarea id="pasteBox" rows="6" placeholder="把微信 / 支付宝 / 银行短信的支付通知整段复制粘贴到这里，例如：
+
+微信支付凭证
+2026年10月2日 12:30
+-25.00
+商户：瑞幸咖啡（万达店）
+支付方式：零钱"></textarea>
+          <div class="hint">iPhone 不允许软件后台读取支付通知，「复制→粘贴」必须由你完成；金额、商户、分类、时间由下面自动识别。</div>
+          <button class="btn ghost" data-action="demo">填入示例试试 →</button>
+          <button class="btn" data-action="parse">🔍 自动识别</button>
+          <div id="parseResult"></div>
+          <button class="btn" id="btnSaveParsed" data-action="saveParsed" disabled>保存这笔</button>
+        </div>
+        <div id="pane-manual" class="hidden">
+          <label class="f">金额</label>
+          <input id="mAmt" type="number" inputmode="decimal" step="0.01" placeholder="0.00">
+          <label class="f">分类</label>
+          <div id="mCats" class="chips"></div>
+          <label class="f">事项（选填）</label>
+          <input id="mWho" placeholder="如：瑞幸咖啡">
+          <label class="f">时间</label>
+          <input id="mTime" type="datetime-local">
+          <label class="f">备注（选填）</label>
+          <input id="mNote">
+          <button class="btn" data-action="saveManual">保存</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="v-stats" class="hidden">
+      <div class="card">
+        <div class="ctitle">🎯 本月预算</div>
+        <div class="brow">
+          <input id="bInput" type="number" inputmode="numeric" min="0" placeholder="输入本月预算，留空为不设">
+          <button class="btn sm" data-action="saveBudget">保存</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">📊 支出分类</div>
+        <div id="catBreak"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">📈 每日趋势</div>
+        <div id="trend" class="trend"></div>
+        <div class="tx"><span id="txL"></span><span id="txR"></span></div>
+      </div>
+    </section>
+
+    <section id="v-data" class="hidden">
+      <div class="card">
+        <div class="ctitle">📥 导入微信 / 支付宝账单</div>
+        <div class="hint">微信：我 → 服务 → 钱包 → 账单 → 右上角「常见问题」→ 下载账单 → 用于个人对账（CSV 发到邮箱，下载后从「文件」导入）。<br>支付宝：我的 → 账单 → 右上角「…」→ 开具交易流水证明，或电脑端导出 CSV。</div>
+        <input type="file" id="fileIn" accept=".csv,.txt" class="hidden">
+        <button class="btn ghost" data-action="pickFile" style="margin-top:4px">📁 选择账单 CSV 文件</button>
+        <div class="f">或把 CSV 文本直接粘贴到这里（含表头行）</div>
+        <textarea id="csvBox" rows="5" placeholder="交易时间,交易类型,交易对方,商品,收/支,金额(元),…"></textarea>
+        <button class="btn" data-action="parseCsv">解析预览</button>
+        <div id="csvPreview"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">💾 备份</div>
+        <div class="hint">数据只保存在本机浏览器里。请固定用同一个地址访问（换地址或电脑 IP 变了，数据会"分家"），建议在路由器里给电脑设固定 IP；每月导出一次备份更稳妥。</div>
+        <div class="grid3">
+          <button class="btn ghost" data-action="bakOut">导出备份</button>
+          <button class="btn ghost" data-action="csvOut">导出 CSV</button>
+          <button class="btn ghost" data-action="bakIn">导入备份</button>
+        </div>
+        <input type="file" id="bakFile" accept=".json,application/json" class="hidden">
+      </div>
+      <div class="card">
+        <button id="btnClear" class="btn danger" data-action="clearAll" style="margin-top:0">清空全部记录</button>
+      </div>
+      <div class="card">
+        <details>
+          <summary>为什么粘贴支付通知不能完全自动？</summary>
+          <div class="hint">这是 iPhone 的系统级隐私限制：任何第三方软件或网页都不能在后台读取微信、支付宝的通知和消息，所以「复制」这一步必须你来完成，之后的一切（金额、商户、分类、时间）自动识别。想补整月旧账，用上面的账单 CSV 导入，一次搞定几十上百笔。</div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <nav id="tabbar">
+    <button data-action="tab" data-v="list" class="on"><i>📒</i>明细</button>
+    <button data-action="tab" data-v="add"><i>➕</i>记一笔</button>
+    <button data-action="tab" data-v="stats"><i>📊</i>统计</button>
+    <button data-action="tab" data-v="data"><i>🗄️</i>数据</button>
+  </nav>
+</div>
+
+<div id="mask" class="hidden"><div id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ================= 基础 ================= */
+var LS='ledger_v1';
+function load(){try{var d=JSON.parse(localStorage.getItem(LS));if(d&&Array.isArray(d.records))return d;}catch(e){}return {records:[],settings:{budget:0}};}
+function save(){try{localStorage.setItem(LS,JSON.stringify(db));}catch(e){toast('保存失败：存储空间不足？');}}
+var db=load();
+var ui={tab:'list',month:curMonth(),parsed:null,preview:null,manualCat:'food',edit:null,delArm:false,clearArm:false};
+
+function pad(n){return String(n).length<2?'0'+n:String(n);}
+function curMonth(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1);}
+function nowLocal(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());}
+function fmtMonth(m){var p=m.split('-');return p[0]+'年'+(+p[1])+'月';}
+function money(n){var v=(Math.round(n*100)/100).toFixed(2);var parts=v.split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');return parts[0]+'.'+parts[1];}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function byId(x){return document.getElementById(x);}
+function dayLabel(t){var d=t.slice(0,10);var wd='日一二三四五六'[new Date(d+'T12:00:00').getDay()];return (+d.slice(5,7))+'月'+(+d.slice(8,10))+'日 周'+wd;}
+
+var toastTimer;
+function toast(msg){var t=byId('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show');},1900);}
+
+/* ================= 分类规则 ================= */
+var CATS={
+  food:{n:'餐饮',i:'🍜'},traffic:{n:'交通',i:'🚇'},shop:{n:'购物',i:'🛒'},home:{n:'居家',i:'🏠'},
+  fun:{n:'娱乐',i:'🎮'},health:{n:'医疗',i:'💊'},edu:{n:'教育',i:'📚'},personal:{n:'个人',i:'💇'},
+  pet:{n:'宠物',i:'🐱'},social:{n:'人情',i:'🎁'},other:{n:'其他',i:'📦'},
+  inc:{n:'收入',i:'💰'},refund:{n:'退款',i:'↩️'}
+};
+var EXP_CATS=['food','traffic','shop','home','fun','health','edu','personal','pet','social','other'];
+var INC_CATS=['inc','refund'];
+var RULES=[
+  ['traffic',['共享单车','美团单车','哈啰骑行','哈啰','青桔','摩拜','滴滴出行','滴滴','高德打车','花小猪','曹操出行','T3出行','地铁','公交','乘车码','打车','网约车','加油','中国石化','中国石油','壳牌','停车费','停车场','高速','ETC','12306','铁路','火车票','火车','机票','航空','出行']],
+  ['food',['肯德基','麦当劳','星巴克','瑞幸咖啡','瑞幸','库迪','蜜雪冰城','喜茶','奈雪','必胜客','海底捞','美团','饿了么','餐厅','饭店','饭馆','食堂','奶茶','咖啡','面馆','米线','米粉','火锅','烧烤','麻辣烫','小龙虾','小吃','早餐','午餐','晚餐','下午茶','甜品','蛋糕','烘焙','快餐','披萨','汉堡','寿司','日料','炸鸡']],
+  ['shop',['美团买菜','多多买菜','淘宝','天猫','京东','拼多多','唯品会','苏宁','得物','闲鱼','转转','山姆','盒马','Costco','超市','便利店','商场','百货','名创优品','优衣库','无印良品','ZARA','H&M','耐克','阿迪达斯','安踏','李宁','小米','华为','Apple','苹果','买菜','抖音','快手']],
+  ['home',['水费','电费','燃气费','物业费','物业','房租','话费','中国移动','中国联通','中国电信','移动','联通','电信','宽带','缴费','水电']],
+  ['fun',['电影','猫眼','淘票票','万达影城','影院','游戏','Steam','腾讯视频','爱奇艺','优酷','芒果TV','哔哩哔哩','B站','网易云音乐','QQ音乐','酷狗','KTV','密室','剧本杀','演唱会','门票','会员']],
+  ['health',['药店','药房','医院','诊所','门诊','医疗','体检','口腔','牙科','眼科','挂号']],
+  ['edu',['学费','培训','课程','网课','得到','知乎','极客时间','多邻国','英语','书店','书城','图书']],
+  ['personal',['理发','美发','发型','美容','美甲','洗衣','干洗','健身','Keep','运动','游泳','瑜伽']],
+  ['pet',['宠物','猫粮','狗粮','猫砂','萌宠']],
+  ['social',['红包','转账','礼金','礼物','随礼','份子']],
+  ['other',['其他']]
+];
+var KW_RULES=[];
+RULES.forEach(function(r){r[1].forEach(function(k){KW_RULES.push({k:k,c:r[0]});});});
+KW_RULES.sort(function(a,b){return b.k.length-a.k.length;});
+function categorize(s){
+  s=(s||'').toLowerCase();
+  for(var i=0;i<KW_RULES.length;i++){if(s.indexOf(KW_RULES[i].k.toLowerCase())>=0)return KW_RULES[i].c;}
+  return 'other';
+}
+
+/* ================= 识别支付通知文本 ================= */
+var BAD_MERCHANT=/^(单号|订单|编号|时间|金额|状态|方式|备注|支付|付款)|^\d+$/;
+function parsePayText(raw){
+  var text=(raw||'').trim();
+  if(!text)return null;
+  var r={raw:text.slice(0,300),type:'expense',refund:false,merchant:'',note:''};
+  var mRefund=/退款|退回|已全额退/.test(text);
+  if(mRefund){r.type='income';r.refund=true;}
+  else if(/收入|入账|收款|到账|收到红包|存入/.test(text))r.type='income';
+  var cands=[],m,i;
+  var re=/[-−]?\s*[¥￥]\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/g;
+  while((m=re.exec(text)))cands.push({p:0,v:m[1]});
+  re=/(?:实付|实收|金额|支出|收入|消费|付款|扣款|收款|支付)[^\d\n\-¥￥]{0,4}(\d+(?:,\d{3})*(?:\.\d{1,2})?)/g;
+  while((m=re.exec(text)))cands.push({p:1,v:m[1]});
+  var lines=text.split(/\n/);
+  for(i=0;i<lines.length;i++){
+    var s=lines[i].trim();
+    if(/^[-−]?\d+(\.\d{1,2})?$/.test(s)){cands.push({p:2,v:s.replace('−','-')});break;}
+  }
+  re=/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*元/g;
+  while((m=re.exec(text)))cands.push({p:3,v:m[1]});
+  cands.sort(function(a,b){return a.p-b.p;});
+  if(!cands.length)return null;
+  var amt=Math.abs(parseFloat(cands[0].v.replace(/,/g,''))||0);
+  if(!isFinite(amt)||amt<=0)return null;
+  r.amount=Math.round(amt*100)/100;
+  var t=null,y=new Date().getFullYear();
+  if((m=/(\d{4})[年\/\-\.](\d{1,2})[月\/\-\.](\d{1,2})日?/.exec(text))){
+    t=m[1]+'-'+pad(+m[2])+'-'+pad(+m[3])+'T12:00';
+    var hm=/(\d{1,2})[:：时](\d{2})/.exec(text.slice(m.index));
+    if(hm)t=t.slice(0,11)+pad(+hm[1])+':'+hm[2];
+  }else if((m=/(\d{1,2})[月\/](\d{1,2})日?\s*(\d{1,2})[:：时](\d{1,2})/.exec(text))){
+    t=y+'-'+pad(+m[1])+'-'+pad(+m[2])+'T'+pad(+m[3])+':'+pad(+m[4]);
+  }else t=nowLocal();
+  r.time=t;
+  var who='',reW=/(?:收款方|收款人|商户全称|商户名称|商家名称|对方账户|对方名称|商户|商家|对方|付款对象|项目)[：:]?\s*([^\n]{2,30})/g;
+  while((m=reW.exec(text))){var v=m[1].trim();if(!BAD_MERCHANT.test(v)){who=v;break;}}
+  if(!who){m=/在([^\n，,。；;：:]{2,20}?)(?:消费|支付成功|付款)/.exec(text);if(m)who=m[1].trim();}
+  if(!who){m=/(?:向|给)([^\n，,。；;：:]{2,20}?)(?:付款|转账|支付)/.exec(text);if(m)who=m[1].trim();}
+  r.merchant=who;
+  r.category=r.type==='income'?(r.refund?'refund':'inc'):categorize(who+' '+text);
+  return r;
+}
+
+/* ================= 账单CSV解析 ================= */
+function splitCSVLine(line){
+  var out=[],cur='',q=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(q){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else{if(c==='"')q=true;else if(c===','){out.push(cur);cur='';}else cur+=c;}
+  }
+  out.push(cur);
+  return out.map(function(s){return s.trim();});
+}
+function detectText(buf){
+  try{return new TextDecoder('utf-8',{fatal:true}).decode(buf);}
+  catch(e){
+    try{return new TextDecoder('gbk').decode(buf);}
+    catch(e2){return new TextDecoder('utf-8').decode(buf);}
+  }
+}
+function parseBillCSV(text){
+  var lines=text.replace(/^\uFEFF/,'').split(/\r\n|\r|\n/).filter(function(l){return l.trim()!=='';});
+  var hi=-1,kind='';
+  for(var i=0;i<lines.length;i++){
+    var c=splitCSVLine(lines[i]);
+    if(c.indexOf('交易时间')>=0&&c.indexOf('收/支')>=0){hi=i;kind='微信账单';break;}
+    if(c.indexOf('交易号')>=0&&c.some(function(x){return /金额/.test(x);})){hi=i;kind='支付宝账单';break;}
+  }
+  if(hi<0)return {error:'没有识别到微信/支付宝账单表头，请确认导出的是「明细 CSV」并包含表头行'};
+  var H=splitCSVLine(lines[hi]);
+  function col(re){for(var j=0;j<H.length;j++)if(re.test(H[j]))return j;return -1;}
+  var iT=col(/^(交易时间|交易创建时间)$/);if(iT<0)iT=col(/付款时间/);
+  var iWho=col(/交易对方/);
+  var iGoods=col(/^商品/);
+  var iIO=col(/收\/支/);if(iIO<0)iIO=col(/收支/);
+  var iAmt=-1;for(var j=0;j<H.length;j++){if(/金额/.test(H[j])&&!/服务费|退款|手续费/.test(H[j])){iAmt=j;break;}}
+  var iStat=col(/当前状态|交易状态/);
+  var iId=col(/交易单号/);if(iId<0)iId=col(/^交易号$/);
+  var rows=[],seen={},dup=0,skipped=0,sumE=0,sumI=0;
+  var exist={};db.records.forEach(function(r){if(r.trade)exist[r.trade]=1;});
+  for(i=hi+1;i<lines.length;i++){
+    var cells=splitCSVLine(lines[i]);
+    if(cells.length<3)continue;
+    var io=(cells[iIO]||'').trim();
+    var amt=parseFloat((cells[iAmt]||'').replace(/[¥￥,，\s]/g,''));
+    if(io!=='支出'&&io!=='收入'){skipped++;continue;}
+    if(!isFinite(amt)||amt<=0){skipped++;continue;}
+    var st=(cells[iStat]||'');
+    if(/退款|关闭|失败|等待/.test(st)){skipped++;continue;}
+    var id=(cells[iId]||'');
+    if(id){if(seen[id]||exist[id]){dup++;continue;}seen[id]=1;}
+    var who=(cells[iWho]||'').trim(),goods=(cells[iGoods]||'').trim();
+    var timeRaw=(iT>=0?(cells[iT]||''):'').trim().replace(/\//g,'-');
+    var time=timeRaw?timeRaw.slice(0,16).replace(' ','T'):nowLocal();
+    var type=io==='支出'?'expense':'income';
+    var rec={id:rid(),time:time,amount:Math.round(amt*100)/100,type:type,merchant:who,note:goods,source:kind,trade:id,raw:''};
+    rec.category=type==='income'?(/退款/.test(st+goods+who)?'refund':'inc'):categorize(who+' '+goods);
+    if(type==='expense')sumE+=rec.amount;else sumI+=rec.amount;
+    rows.push(rec);
+  }
+  return {kind:kind,rows:rows,skipped:skipped,dup:dup,sumE:sumE,sumI:sumI};
+}
+
+/* ================= 数据查询 ================= */
+function recsOfMonth(){var m=ui.month;return db.records.filter(function(r){return r.time&&r.time.slice(0,7)===m;}).sort(function(a,b){return a.time<b.time?1:-1;});}
+function monthSums(rs){var e=0,i=0;rs.forEach(function(r){if(r.type==='expense')e+=r.amount;else i+=r.amount;});return {e:Math.round(e*100)/100,i:Math.round(i*100)/100};}
+
+/* ================= 渲染 ================= */
+function render(){
+  byId('mlabel').textContent=fmtMonth(ui.month);
+  var rs=recsOfMonth(),s=monthSums(rs);
+  byId('sumE').textContent='¥'+money(s.e);
+  byId('sumI').textContent='¥'+money(s.i);
+  var bal=Math.round((s.i-s.e)*100)/100;
+  byId('sumB').textContent=(bal<0?'-':'')+'¥'+money(Math.abs(bal));
+  var b=db.settings.budget||0,bl=byId('budgetLine');
+  if(b>0){
+    bl.classList.remove('hidden');
+    byId('bfill').style.width=Math.min(100,s.e/b*100)+'%';
+    byId('bfill').style.background=s.e>b?'rgba(255,120,120,.95)':'#fff';
+    byId('btext').textContent=s.e>b?('已超支 ¥'+money(s.e-b)+' / 预算 ¥'+money(b)):('预算 ¥'+money(b)+'，还剩 ¥'+money(b-s.e));
+  }else bl.classList.add('hidden');
+  ['list','add','stats','data'].forEach(function(t){byId('v-'+t).classList.toggle('hidden',ui.tab!==t);});
+  Array.prototype.forEach.call(byId('tabbar').children,function(btn){btn.classList.toggle('on',btn.dataset.v===ui.tab);});
+  if(ui.tab==='list')renderList(rs);
+  if(ui.tab==='stats')renderStats(rs,s);
+  if(ui.tab==='data')renderData();
+}
+function renderList(rs){
+  var el=byId('v-list');
+  if(!rs.length){
+    el.innerHTML='<div class="card empty"><b>本月还没有记录</b><br>点底部「➕ 记一笔」，把支付通知粘贴进来即可自动识别；<br>也可以在「数据」页导入微信/支付宝的账单 CSV，一次记整月。</div>';
+    return;
+  }
+  var days=[],dayMap={};
+  rs.forEach(function(r){
+    var d=r.time.slice(0,10);
+    if(!dayMap[d]){dayMap[d]=[];days.push(d);}
+    dayMap[d].push(r);
+  });
+  var html='';
+  days.forEach(function(d){
+    var rows=dayMap[d],de=0,di=0;
+    rows.forEach(function(r){if(r.type==='expense')de+=r.amount;else di+=r.amount;});
+    html+='<div class="card"><div class="dayhead"><span>'+dayLabel(d)+'</span><span>'+(de>0?'-¥'+money(de):'+¥'+money(di))+'</span></div>';
+    rows.forEach(function(r){
+      var c=CATS[r.category]||CATS.other;
+      html+='<div class="row" data-action="edit" data-id="'+esc(r.id)+'">'
+        +'<div class="ic">'+c.i+'</div>'
+        +'<div class="mid"><div class="t1">'+esc(r.merchant||c.n)+'</div><div class="t2">'+r.time.slice(11,16)+(r.note?' · '+esc(r.note):'')+'</div></div>'
+        +'<div class="amt '+r.type+'">'+(r.type==='expense'?'-':'+')+'¥'+money(r.amount)+'</div>'
+        +'</div>';
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function renderStats(rs,s){
+  var b=db.settings.budget||0;
+  byId('bInput').value=b>0?b:'';
+  var e=s.e,html='';
+  if(e<=0){html='<div class="hint" style="margin:4px 0">本月暂无支出</div>';}
+  else{
+    var byCat={};
+    rs.forEach(function(r){if(r.type==='expense'){byCat[r.category]=(byCat[r.category]||0)+r.amount;}});
+    var arr=Object.keys(byCat).map(function(k){return {k:k,v:byCat[k]};}).sort(function(a,b){return b.v-a.v;});
+    arr.forEach(function(it){
+      var c=CATS[it.k]||CATS.other;
+      html+='<div class="crow"><span class="cn">'+c.i+' '+c.n+'</span><div class="cbar"><i style="width:'+(it.v/e*100).toFixed(1)+'%"></i></div><span class="cv">¥'+money(it.v)+' · '+(it.v/e*100).toFixed(0)+'%</span></div>';
+    });
+  }
+  byId('catBreak').innerHTML=html;
+  var y=+ui.month.slice(0,4);
+  var mo=+ui.month.slice(5,7);
+  var dim=new Date(y,mo,0).getDate();
+  var perDay=[],max=0;
+  for(var i=1;i<=dim;i++)perDay[i]=0;
+  rs.forEach(function(r){if(r.type==='expense'){var d=+r.time.slice(8,10);perDay[d]=(perDay[d]||0)+r.amount;}});
+  for(i=1;i<=dim;i++)if(perDay[i]>max)max=perDay[i];
+  var tdom=byId('trend');tdom.innerHTML='';
+  if(max>0){
+    var todayStr=curMonth()===ui.month?new Date().getDate():0;
+    for(i=1;i<=dim;i++){
+      var bar=document.createElement('i');
+      bar.style.height=max>0?Math.max(2,perDay[i]/max*100)+'%':'2%';
+      if(i===todayStr)bar.className='today';
+      bar.title=i+'日 ¥'+money(perDay[i]);
+      tdom.appendChild(bar);
+    }
+  }
+  byId('txL').textContent='1日';
+  byId('txR').textContent=max>0?('最高一天 ¥'+money(max)):'本月暂无支出';
+}
+function renderData(){
+  var el=byId('csvPreview'),p=ui.preview;
+  if(!p){el.innerHTML='';return;}
+  if(p.error){el.innerHTML='<div class="pv err">⚠️ '+esc(p.error)+'</div>';return;}
+  var mini='';
+  p.rows.slice(0,4).forEach(function(r){
+    mini+=esc((r.time||'').slice(5,16).replace('T',' '))+' '+esc(r.merchant||CATS[r.category].n)+' ¥'+money(r.amount)+'<br>';
+  });
+  el.innerHTML='<div class="pv">✓ 识别为'+esc(p.kind)+'：支出 <b>'+p.rows.filter(function(r){return r.type==='expense';}).length+'</b> 笔 ¥'+money(p.sumE)
+    +'，收入 <b>'+p.rows.filter(function(r){return r.type==='income';}).length+'</b> 笔 ¥'+money(p.sumI)
+    +'<br>跳过 '+p.skipped+' 笔（退款/不计收支/无效），重复 '+p.dup+' 笔'
+    +(p.rows.length?'<div class="mini">'+mini+'</div>':'')
+    +(p.rows.length?'<button class="btn" data-action="csvImport" style="margin-bottom:0">确认导入 '+p.rows.length+' 笔</button>':'<div class="hint">没有可导入的有效记录</div>')+'</div>';
+}
+function catChips(cur,action,cats){
+  return cats.map(function(k){
+    var c=CATS[k];
+    return '<button class="chip'+(k===cur?' on':'')+'" data-action="'+action+'" data-v="'+k+'">'+c.i+' '+c.n+'</button>';
+  }).join('');
+}
+function renderParsed(){
+  var el=byId('parseResult'),p=ui.parsed;
+  byId('btnSaveParsed').disabled=!p;
+  if(!p){el.innerHTML='';return;}
+  el.innerHTML='<div class="parsed">'
+    +'<div class="ctitle" style="margin:10px 0 0">识别结果<span class="ok">✓ 已自动填写，请确认</span></div>'
+    +'<label class="f">类型</label><div class="chips" id="pType">'
+    +'<button class="chip'+(p.type==='expense'?' on':'')+'" data-action="ptype" data-v="expense">支出</button>'
+    +'<button class="chip'+(p.type==='income'?' on':'')+'" data-action="ptype" data-v="income">收入</button></div>'
+    +'<label class="f">金额</label><input type="number" inputmode="decimal" step="0.01" data-pf="amount" value="'+p.amount+'">'
+    +'<label class="f">时间</label><input type="datetime-local" data-pf="time" value="'+esc(p.time)+'">'
+    +'<label class="f">事项</label><input data-pf="merchant" value="'+esc(p.merchant)+'" placeholder="没识别到可手动填">'
+    +'<label class="f">分类</label><div class="chips" id="pCats">'+catChips(p.category,'pcat',p.type==='income'?INC_CATS:EXP_CATS)+'</div>'
+    +'<label class="f">备注（选填）</label><input data-pf="note" value="'+esc(p.note)+'">'
+    +'</div>';
+}
+/* ================= 编辑弹层 ================= */
+function openSheet(id){
+  var rec=null;
+  db.records.forEach(function(r){if(r.id===id)rec=r;});
+  if(!rec)return;
+  ui.edit={id:rec.id,type:rec.type,amount:rec.amount,time:rec.time,merchant:rec.merchant,note:rec.note,category:rec.category,raw:rec.raw||''};
+  ui.delArm=false;
+  byId('sheet').innerHTML='<h3>编辑记录</h3>'
+    +'<label class="f">类型</label><div class="chips" id="eType">'
+    +'<button class="chip'+(ui.edit.type==='expense'?' on':'')+'" data-action="eptype" data-v="expense">支出</button>'
+    +'<button class="chip'+(ui.edit.type==='income'?' on':'')+'" data-action="eptype" data-v="income">收入</button></div>'
+    +'<label class="f">金额</label><input type="number" inputmode="decimal" step="0.01" data-ef="amount" value="'+ui.edit.amount+'">'
+    +'<label class="f">时间</label><input type="datetime-local" data-ef="time" value="'+esc(ui.edit.time)+'">'
+    +'<label class="f">事项</label><input data-ef="merchant" value="'+esc(ui.edit.merchant)+'">'
+    +'<label class="f">分类</label><div class="chips" id="eCats">'+catChips(ui.edit.category,'ecat',ui.edit.type==='income'?INC_CATS:EXP_CATS)+'</div>'
+    +'<label class="f">备注</label><input data-ef="note" value="'+esc(ui.edit.note)+'">'
+    +'<button class="btn" data-action="saveEdit">保存修改</button>'
+    +'<button class="btn danger" id="btnDel" data-action="delRec">删除</button>';
+  byId('mask').classList.remove('hidden');
+}
+function closeSheet(){byId('mask').classList.add('hidden');ui.edit=null;}
+function chipSel(el){Array.prototype.forEach.call(el.parentNode.children,function(c){c.classList.toggle('on',c===el);});}
+
+/* ================= 动作 ================= */
+function shiftMonth(d){
+  var p=ui.month.split('-'),y=+p[0],m=+p[1]+d;
+  if(m<1){m=12;y--;}if(m>12){m=1;y++;}
+  ui.month=y+'-'+pad(m);
+  render();
+}
+function doParse(){
+  var text=byId('pasteBox').value;
+  var p=parsePayText(text);
+  if(!p){toast('没识别出金额，检查一下粘贴的内容？');return;}
+  ui.parsed=p;
+  renderParsed();
+  toast('识别成功，请确认后保存');
+}
+function pushRecord(r){
+  r.id=rid();db.records.push(r);save();
+}
+function doSaveParsed(){
+  var p=ui.parsed;
+  if(!p||!(p.amount>0)){toast('金额不对，改一下再保存');return;}
+  pushRecord({time:p.time||nowLocal(),amount:Math.round(p.amount*100)/100,type:p.type,category:p.category,merchant:p.merchant,note:p.note,source:'粘贴识别',raw:p.raw,trade:''});
+  ui.parsed=null;byId('pasteBox').value='';
+  renderParsed();
+  ui.tab='list';render();
+  toast('已保存 ✓');
+}
+function doSaveManual(){
+  var amt=parseFloat(byId('mAmt').value);
+  if(!isFinite(amt)||amt<=0){toast('请输入金额');return;}
+  pushRecord({time:byId('mTime').value||nowLocal(),amount:Math.round(amt*100)/100,type:'expense',category:ui.manualCat,merchant:byId('mWho').value.trim(),note:byId('mNote').value.trim(),source:'手动',raw:'',trade:''});
+  byId('mAmt').value='';byId('mWho').value='';byId('mNote').value='';byId('mTime').value=nowLocal();
+  ui.tab='list';render();
+  toast('已保存 ✓');
+}
+function download(name,content,mime){
+  var blob=new Blob([content],{type:mime});
+  var u=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=u;a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove();},400);
+}
+function csvCell(s){s=String(s==null?'':s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function exportCSV(){
+  var head='交易时间,类型,分类,事项,备注,金额,来源\n';
+  var body=db.records.slice().sort(function(a,b){return a.time<b.time?-1:1;}).map(function(r){
+    return [r.time,r.type==='expense'?'支出':'收入',(CATS[r.category]||CATS.other).n,r.merchant,r.note,r.amount,r.source].map(csvCell).join(',');
+  }).join('\n');
+  download('记账记录_'+ui.month+'.csv','\uFEFF'+head+body,'text/csv');
+  toast('CSV 已导出');
+}
+function readBillFile(f){
+  var fr=new FileReader();
+  fr.onload=function(){
+    var text='';
+    try{text=detectText(fr.result);}catch(e){text=String(fr.result);}
+    ui.preview=parseBillCSV(text);
+    renderData();
+    toast(ui.preview.error?'解析失败':'解析完成，请确认后导入');
+  };
+  fr.readAsArrayBuffer(f);
+}
+function readBakFile(f){
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var obj=JSON.parse(fr.result);
+      if(!obj||!Array.isArray(obj.records))throw 0;
+      var seen={};db.records.forEach(function(r){seen[r.id]=1;});
+      var add=obj.records.filter(function(r){return r&&r.id&&!seen[r.id];});
+      db.records=db.records.concat(add);
+      if(obj.settings&&typeof obj.settings==='object')db.settings=obj.settings;
+      save();render();
+      toast('备份导入完成：新增 '+add.length+' 笔');
+    }catch(e){toast('备份文件格式不对');}
+  };
+  fr.readAsText(f,'utf-8');
+}
+
+/* ================= 事件（全部委托，节点不替换防IAB点击循环） ================= */
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-action]');
+  if(!el)return;
+  var a=el.dataset.action;
+  if(a==='tab'){
+    ui.tab=el.dataset.v;
+    if(ui.tab==='add'&&!byId('mTime').value)byId('mTime').value=nowLocal();
+    render();
+  }
+  else if(a==='pm')shiftMonth(-1);
+  else if(a==='nm')shiftMonth(1);
+  else if(a==='seg'){
+    var v=el.dataset.v;
+    byId('pane-paste').classList.toggle('hidden',v!=='paste');
+    byId('pane-manual').classList.toggle('hidden',v!=='manual');
+    byId('seg-paste').classList.toggle('on',v==='paste');
+    byId('seg-manual').classList.toggle('on',v==='manual');
+  }
+  else if(a==='demo')byId('pasteBox').value='微信支付凭证\n2026年10月2日 12:30\n-25.00\n商户：瑞幸咖啡（万达店）\n支付方式：零钱';
+  else if(a==='parse')doParse();
+  else if(a==='saveParsed')doSaveParsed();
+  else if(a==='saveManual')doSaveManual();
+  else if(a==='ptype'&&ui.parsed){
+    ui.parsed.type=el.dataset.v;
+    ui.parsed.category=ui.parsed.type==='income'?(ui.parsed.refund?'refund':'inc'):'other';
+    chipSel(el);
+    byId('pCats').innerHTML=catChips(ui.parsed.category,'pcat',ui.parsed.type==='income'?INC_CATS:EXP_CATS);
+  }
+  else if(a==='pcat'&&ui.parsed){ui.parsed.category=el.dataset.v;chipSel(el);}
+  else if(a==='mcat'){ui.manualCat=el.dataset.v;chipSel(el);}
+  else if(a==='edit')openSheet(el.dataset.id);
+  else if(a==='eptype'&&ui.edit){
+    ui.edit.type=el.dataset.v;
+    ui.edit.category=ui.edit.type==='income'?'inc':'other';
+    chipSel(el);
+    byId('eCats').innerHTML=catChips(ui.edit.category,'ecat',ui.edit.type==='income'?INC_CATS:EXP_CATS);
+  }
+  else if(a==='ecat'&&ui.edit){ui.edit.category=el.dataset.v;chipSel(el);}
+  else if(a==='saveEdit'&&ui.edit){
+    if(!(ui.edit.amount>0)){toast('金额不对');return;}
+    db.records.forEach(function(r){
+      if(r.id===ui.edit.id){
+        r.type=ui.edit.type;r.amount=Math.round(ui.edit.amount*100)/100;r.time=ui.edit.time;
+        r.merchant=ui.edit.merchant;r.note=ui.edit.note;r.category=ui.edit.category;
+      }
+    });
+    save();closeSheet();render();toast('已更新 ✓');
+  }
+  else if(a==='delRec'&&ui.edit){
+    var btn=byId('btnDel');
+    if(!ui.delArm){ui.delArm=true;btn.textContent='再点一次确认删除';btn.classList.add('armed');return;}
+    db.records=db.records.filter(function(r){return r.id!==ui.edit.id;});
+    save();closeSheet();render();toast('已删除');
+  }
+  else if(a==='saveBudget'){
+    var v=parseFloat(byId('bInput').value);
+    db.settings.budget=isFinite(v)&&v>0?Math.round(v):0;
+    save();render();
+    toast(db.settings.budget?('预算已设为 ¥'+money(db.settings.budget)):'已取消预算');
+  }
+  else if(a==='pickFile')byId('fileIn').click();
+  else if(a==='parseCsv'){
+    var t=byId('csvBox').value;
+    if(!t.trim()){toast('先粘贴账单CSV内容');return;}
+    ui.preview=parseBillCSV(t);
+    renderData();
+    toast(ui.preview.error?'解析失败':'解析完成，请确认后导入');
+  }
+  else if(a==='csvImport'){
+    var p=ui.preview;
+    if(!p||!p.rows||!p.rows.length)return;
+    db.records=db.records.concat(p.rows);
+    save();
+    ui.preview=null;byId('csvBox').value='';
+    ui.tab='list';render();
+    toast('已导入 '+p.rows.length+' 笔 ✓');
+  }
+  else if(a==='bakOut'){
+    download('记账备份_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db),'application/json');
+    toast('备份已导出');
+  }
+  else if(a==='csvOut')exportCSV();
+  else if(a==='bakIn')byId('bakFile').click();
+  else if(a==='clearAll'){
+    var cb=byId('btnClear');
+    if(!ui.clearArm){ui.clearArm=true;cb.textContent='再点一次确认清空全部';cb.classList.add('armed');return;}
+    db.records=[];save();ui.clearArm=false;cb.textContent='清空全部记录';cb.classList.remove('armed');
+    render();toast('已清空');
+  }
+});
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.dataset&&el.dataset.pf&&ui.parsed){
+    var f=el.dataset.pf;
+    ui.parsed[f]=f==='amount'?(parseFloat(el.value)||0):el.value;
+  }
+  if(el.dataset&&el.dataset.ef&&ui.edit){
+    var g=el.dataset.ef;
+    ui.edit[g]=g==='amount'?(parseFloat(el.value)||0):el.value;
+  }
+});
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.id==='fileIn'&&el.files&&el.files[0])readBillFile(el.files[0]);
+  if(el.id==='bakFile'&&el.files&&el.files[0])readBakFile(el.files[0]);
+});
+byId('mask').addEventListener('click',function(e){if(e.target===byId('mask'))closeSheet();});
+
+/* ================= 初始化 ================= */
+(function(){
+  var h=(location.hash||'').slice(1);
+  if(h==='add'||h==='stats'||h==='data')ui.tab=h;
+  var q=location.search.match(/[?&]auto=([^&]+)/);
+  if(q){
+    try{
+      var txt=decodeURIComponent(q[1]);
+      var p=parsePayText(txt);
+      if(p){ui.tab='add';ui.parsed=p;byId('pasteBox').value=txt;}
+      else setTimeout(function(){toast('链接带来的内容没识别出金额');},400);
+    }catch(e){}
+  }
+})();
+if(ui.parsed)renderParsed();
+byId('mTime').value=nowLocal();
+byId('mCats').innerHTML=catChips(ui.manualCat,'mcat',EXP_CATS);
+render();
+</script>
+</body>
+</html>
