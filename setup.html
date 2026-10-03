@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0fa968">
+<title>「记一笔」快捷指令安装引导</title>
+<style>
+:root{--bg:#f4f5f7;--ink:#1c1e21;--sub:#8a919c;--line:#eceef1;--acc:#0fa968;--deep:#0d8f5a;--weak:#e6f7ef}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Microsoft YaHei,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.7}
+#app{max-width:520px;margin:0 auto;padding-bottom:40px}
+header{background:linear-gradient(160deg,var(--deep),var(--acc));color:#fff;padding:22px 18px;border-radius:0 0 18px 18px}
+header h1{font-size:19px}
+header p{font-size:13px;opacity:.9;margin-top:6px}
+.card{background:#fff;border-radius:14px;margin:12px;padding:16px}
+.ctitle{font-weight:700;font-size:15px;margin-bottom:8px}
+.step{display:flex;gap:10px;margin:12px 0}
+.stepnum{flex:none;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:3px}
+.hint{font-size:12px;color:var(--sub)}
+.action{background:#f6f8fa;border-radius:10px;padding:8px 12px;margin:6px 0;font-size:14px}
+.action b{color:var(--deep)}
+.copybtn{display:block;width:100%;padding:11px;border-radius:11px;background:var(--weak);color:var(--deep);font-weight:600;font-size:14px;border:1.5px dashed var(--acc);margin:8px 0 4px}
+.copybtn.plain{background:#eef0f3;color:var(--ink);border:0}
+.url{word-break:break-all;background:#f6f8fa;border-radius:8px;padding:8px 10px;font-size:13px;margin:6px 0}
+#toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(28,30,33,.92);color:#fff;padding:9px 18px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50}
+#toast.show{opacity:1}
+ol,ul{padding-left:20px}
+li{margin:4px 0}
+em{font-style:normal;background:var(--weak);border-radius:4px;padding:0 4px;color:var(--deep);font-weight:600}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>⌨️ 快捷指令「记一笔」安装引导</h1>
+    <p>复制支付通知 → 轻点一下 → 金额/商户/分类/时间自动填好 → 点「保存这笔」。全程约 3 秒。</p>
+  </header>
+
+  <div class="card">
+    <div class="ctitle">✅ 开始前确认</div>
+    <div class="hint">你正在用 iPhone 的 <em>Safari</em> 看到本页，说明网络没问题。如果是在微信里打开的，请点右上角「···」→ <em>在 Safari 中打开</em>。此引导只需要做一次。</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">🛠️ 四步建好快捷指令（约 2 分钟）</div>
+    <div class="step"><div class="stepnum">1</div><div>打开 iPhone 自带 <em>快捷指令</em> App → 底部「快捷指令」→ 右上角 <em>＋</em> 新建。</div></div>
+    <div class="step"><div class="stepnum">2</div><div>点 <em>添加操作</em>，按顺序搜索并添加下面 4 个动作（顺序不能错）：
+      <div class="action">① <b>获取剪贴板</b></div>
+      <div class="action">② <b>URL 编码</b>（输入自动接上一步，不用改）</div>
+      <div class="action">③ <b>文本</b>：先复制下面这行网址粘贴进输入框，然后点输入框下方/长按选 <em>选择变量</em>，把第②步「URL 编码」的<b>结果变量</b>接到网址末尾（或直接把变量拖到末尾）
+        <button class="copybtn" data-copy="url">📋 一键复制网址（第③步要填的内容）</button>
+        <div class="url">https://reotho123-pixel.github.io/auto-ledger/?auto=</div>
+      </div>
+      <div class="action">④ <b>打开 URL</b>（输入自动接上一步）</div>
+    </div></div>
+    <div class="step"><div class="stepnum">3</div><div>点顶部长标题 → 改名为 <em>记一笔</em> → 右上角「完成」。</div></div>
+    <div class="step"><div class="stepnum">4</div><div>先复制下面这段示例支付文字，再运行一次「记一笔」验证：Safari 应自动弹出且金额 <em>25</em>、商户 <em>瑞幸咖啡</em> 已填好。测完去「明细」把这条删掉即可。
+      <button class="copybtn plain" data-copy="test">📋 复制测试文字</button>
+    </div></div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">✨ 让它更好用：轻点背面两下</div>
+    <div>设置 → 辅助功能 → 触控 → 拉到最底 <em>轻点背面</em> → 轻点两下 → 选快捷指令「记一笔」。以后复制完支付通知，<b>敲两下手机背面</b>就自动记账。</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">📱 日常怎么用</div>
+    <ul>
+      <li>微信：支付后点开「微信支付」服务通知 → 长按文字 <em>复制</em>（通知栏也可以）→ 敲两下背面 → 保存</li>
+      <li>支付宝：账单详情页复制商家/金额信息，或用「数据」页导 CSV 批量补</li>
+      <li>银行消费短信：建议另建一条「收到信息」自动化（配方一），实现零操作</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">🩹 不对劲时看这里</div>
+    <ul>
+      <li>打开后提示「没识别出金额」→ 剪贴板里不是支付文字，重新复制</li>
+      <li>打开的是 404/空白页 → 检查第③步网址是否完整（务必用上面的复制按钮）</li>
+      <li>每笔都要点一下「保存这笔」→ 这是防误识别/重复记账的确认，故意的</li>
+      <li>数据存在手机本机浏览器，换浏览器/清 Safari 数据会丢 → 记得每月「数据 → 导出备份」</li>
+    </ul>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+'use strict';
+var TEXTS={
+  url:'https://reotho123-pixel.github.io/auto-ledger/?auto=',
+  test:'微信支付凭证\n2026年10月2日 12:30\n-25.00\n商户：瑞幸咖啡（万达店）\n支付方式：零钱'
+};
+var t;
+function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(t);t=setTimeout(function(){e.classList.remove('show');},1600);}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-copy]');
+  if(!b)return;
+  var text=TEXTS[b.dataset.copy];
+  function done(){toast('已复制 ✓ '+(b.dataset.copy==='url'?'去快捷指令第③步粘贴':'运行「记一笔」测试'));}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done,function(){fallback();});
+  }else fallback();
+  function fallback(){
+    var ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');done();}catch(err){toast('复制失败，请手动长按复制');}
+    ta.remove();
+  }
+});
+</script>
+</body>
+</html>
