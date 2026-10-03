@@ -276,7 +276,7 @@ function parsePayText(raw){
   var r={raw:text.slice(0,300),type:'expense',refund:false,merchant:'',note:''};
   var mRefund=/退款|退回|已全额退/.test(text);
   if(mRefund){r.type='income';r.refund=true;}
-  else if(/收入|入账|收款|到账|收到红包|存入/.test(text))r.type='income';
+  else if(/到账|存入|入账|收到红包|向你转账|给你转账|收款成功|实收|工资|奖金|理财收益/.test(text))r.type='income';
   var cands=[],m,i;
   var re=/[-−]?\s*[¥￥]\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/g;
   while((m=re.exec(text)))cands.push({p:0,v:m[1]});
@@ -287,7 +287,7 @@ function parsePayText(raw){
     var s=lines[i].trim();
     if(/^[-−]?\d+(\.\d{1,2})?$/.test(s)){cands.push({p:2,v:s.replace('−','-')});break;}
   }
-  re=/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*元/g;
+  re=/(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*[元块]/g;
   while((m=re.exec(text)))cands.push({p:3,v:m[1]});
   cands.sort(function(a,b){return a.p-b.p;});
   if(!cands.length)return null;
@@ -307,6 +307,15 @@ function parsePayText(raw){
   while((m=reW.exec(text))){var v=m[1].trim();if(!BAD_MERCHANT.test(v)){who=v;break;}}
   if(!who){m=/在([^\n，,。；;：:]{2,20}?)(?:消费|支付成功|付款)/.exec(text);if(m)who=m[1].trim();}
   if(!who){m=/(?:向|给)([^\n，,。；;：:]{2,20}?)(?:付款|转账|支付)/.exec(text);if(m)who=m[1].trim();}
+  if(!who){m=/([\u4e00-\u9fa5A-Za-z0-9_·]{2,15}?)(?:向你|给你)(?:转账|收款|付款)/.exec(text);if(m)who=m[1].trim();}
+  if(!who){
+    var STOP=/支付|微信|支付宝|凭证|收款|付款|转账|红包|通知|账单|金额|商户|零钱|银行卡|余额|成功|时间|方式|订单|单号|备注|优惠|对方|交易|消费|人民币|快捷|尾号|扣款|支出|收入|收款方|付款方|服务|累计|本月|到账|转账备注/;
+    var segs=text.split(/[\s，,。;；、：:（）()\[\]【】\n「」]+/);
+    for(i=0;i<segs.length;i++){
+      var s2=segs[i].replace(/^[-−¥￥\d.]+/,'').replace(/[\d.元块]+$/,'').replace(/的?(红包|转账|退款|账单)$/,'').trim();
+      if(s2.length>=2&&s2.length<=15&&!/\d/.test(s2)&&!STOP.test(s2)){who=s2;break;}
+    }
+  }
   r.merchant=who;
   r.category=r.type==='income'?(r.refund?'refund':'inc'):categorize(who+' '+text);
   return r;
