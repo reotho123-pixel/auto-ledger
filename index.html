@@ -135,6 +135,7 @@ details summary::before{content:'❓ '}
           <button class="btn" data-action="parse">🔍 自动识别</button>
           <div id="parseResult"></div>
           <button class="btn" id="btnSaveParsed" data-action="saveParsed" disabled>保存这笔</button>
+          <button class="btn ghost" data-action="copyRaw" style="margin-top:8px">📋 识别不准？复制原文发给ZCode精调</button>
         </div>
         <div id="pane-manual" class="hidden">
           <label class="f">金额</label>
@@ -582,8 +583,8 @@ function doSaveManual(){
   if(!isFinite(amt)||amt<=0){toast('请输入金额');return;}
   pushRecord({time:byId('mTime').value||nowLocal(),amount:Math.round(amt*100)/100,type:'expense',category:ui.manualCat,merchant:byId('mWho').value.trim(),note:byId('mNote').value.trim(),source:'手动',raw:'',trade:''});
   byId('mAmt').value='';byId('mWho').value='';byId('mNote').value='';byId('mTime').value=nowLocal();
-  ui.tab='list';render();
-  toast('已保存 ✓');
+  render();
+  toast('已保存 ✓ 可继续记');
 }
 function download(name,content,mime){
   var blob=new Blob([content],{type:mime});
@@ -714,6 +715,19 @@ document.addEventListener('click',function(e){
   }
   else if(a==='csvOut')exportCSV();
   else if(a==='bakIn')byId('bakFile').click();
+  else if(a==='copyRaw'){
+    var t=byId('pasteBox').value.trim();
+    if(!t){toast('先粘贴内容再复制');return;}
+    function cok(){toast('原文已复制 ✓ 粘贴发给ZCode');}
+    function cfb(){
+      var ta=document.createElement('textarea');
+      ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.focus();ta.select();
+      try{document.execCommand('copy');cok();}catch(e){toast('复制失败');}
+      ta.remove();
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(cok,cfb);else cfb();
+  }
   else if(a==='clearAll'){
     var cb=byId('btnClear');
     if(!ui.clearArm){ui.clearArm=true;cb.textContent='再点一次确认清空全部';cb.classList.add('armed');return;}
